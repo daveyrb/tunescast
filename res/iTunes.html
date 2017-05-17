@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>TunesCast</title>
+		<meta name="author" content="Leopold Mathias Regner" />
+		
+		<!-- load required libraries -->
+		<script src="https://code.jquery.com/jquery-2.2.4.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.simpleWeather/3.1.0/jquery.simpleWeather.min.js" crossorigin="anonymous"></script>
+		<link href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;subset=latin-ext" rel="stylesheet" />
+		
+		<!-- application business logic -->
+		<script type="text/javascript">
+			
+			var config =
+			{
+				timeout: 2000, // milliseconds
+				interval: 1000, // milliseconds
+				toleranceTime: 2 // seconds
+			};
+			
+			$(document).ready(function()
+			{
+				// reset volume value of last session
+				setVolume($('input[type=range]')[0].value = $.cookie('volume') || 50);
+				
+				// load current wheather
+				if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(position)
+				{
+					$.simpleWeather(
+					{
+						unit: 'c',
+						location: position.coords.latitude + ',' + position.coords.longitude,
+						success: function(weather)
+						{
+							$('#weather > #icon').addClass('icon-' + weather.code);
+							$('#weather > #temp').html(weather.temp);
+						}
+					});
+				});
+				
+				// load current iTunes status
+				(window.getStatus = function()
+				{
+					$.ajax(
+					{
+						jsonpCallback: 'callback',
+						timeout: config.timeout,
+						url: '/status/itunes',
+						dataType: 'jsonp'
+					});
+				})();
+			});
+			
+			function callback(json)
+			{
+				json.currentTime = parseFloat(json.pos.split(',').join('.'));
+				synchronizeStati($('audio')[0], json);
+				setTimeout(getStatus, config.interval);
+			}
+			
+			function synchronizeStati(webPlayer, iTunes)
+			{
+				if(webPlayer.track != iTunes.track)
+					if(iTunes.track == null)
+					{
+						webPlayer.src = '';
+						webPlayer.track = null;
+						
+						$('#title').html('');
+						$('#artist').html('');
+						$('progress')[0].max = 0;
+						$('img')[0].src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+					}
+					else
+					{
+						webPlayer.src = '/proxy?' + encodeURI(iTunes.url);
+						webPlayer.track = iTunes.track;
+						
+						$('#title').html(iTunes.title);
+						$('#artist').html(iTunes.artist);
+						$('img')[0].src = '/image?' + Date.now();
+					}
+				
+				if(iTunes.state == 'playing' && webPlayer.paused)
+					webPlayer.play();
+				
+				if(iTunes.state == 'paused' && !webPlayer.paused)
+					webPlayer.pause();
+				
+				if(webPlayer.currentTime < iTunes.currentTime - config.toleranceTime || webPlayer.currentTime > iTunes.currentTime + config.toleranceTime)
+				   webPlayer.currentTime = iTunes.currentTime;
+				
+				$('progress')[0].value = parseInt(webPlayer.currentTime);
+				if(webPlayer.duration > 0) $('progress')[0].max = parseInt(webPlayer.duration);
+			}
+			
+			function setVolume(volume)
+			{
+				$('audio')[0].volume = volume / 100;
+				document.cookie = 'volume=' + volume;
+			}
+			
+		</script>
+		
+		<!-- styling -->
+		<style type="text/css">
+			
+			@font-face
+			{
+				font-family: 'weather';
+				src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/93/artill_clean_icons-webfont.eot');
+				src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/93/artill_clean_icons-webfont.eot?#iefix') format('embedded-opentype'),
+					 url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/93/artill_clean_icons-webfont.woff') format('woff'),
+					 url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/93/artill_clean_icons-webfont.ttf') format('truetype'),
+					 url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/93/artill_clean_icons-webfont.svg#artill_clean_weather_iconsRg') format('svg');
+				font-weight: normal;
+				font-style: normal;
+			}
+			
+			.icon-0:before { content: ":"; }
+			.icon-1:before { content: "p"; }
+			.icon-2:before { content: "S"; }
+			.icon-3:before { content: "Q"; }
+			.icon-4:before { content: "S"; }
+			.icon-5:before { content: "W"; }
+			.icon-6:before { content: "W"; }
+			.icon-7:before { content: "W"; }
+			.icon-8:before { content: "W"; }
+			.icon-9:before { content: "I"; }
+			.icon-10:before { content: "W"; }
+			.icon-11:before { content: "I"; }
+			.icon-12:before { content: "I"; }
+			.icon-13:before { content: "I"; }
+			.icon-14:before { content: "I"; }
+			.icon-15:before { content: "W"; }
+			.icon-16:before { content: "I"; }
+			.icon-17:before { content: "W"; }
+			.icon-18:before { content: "U"; }
+			.icon-19:before { content: "Z"; }
+			.icon-20:before { content: "Z"; }
+			.icon-21:before { content: "Z"; }
+			.icon-22:before { content: "Z"; }
+			.icon-23:before { content: "Z"; }
+			.icon-24:before { content: "E"; }
+			.icon-25:before { content: "E"; }
+			.icon-26:before { content: "3"; }
+			.icon-27:before { content: "a"; }
+			.icon-28:before { content: "A"; }
+			.icon-29:before { content: "a"; }
+			.icon-30:before { content: "A"; }
+			.icon-31:before { content: "6"; }
+			.icon-32:before { content: "1"; }
+			.icon-33:before { content: "6"; }
+			.icon-34:before { content: "1"; }
+			.icon-35:before { content: "W"; }
+			.icon-36:before { content: "1"; }
+			.icon-37:before { content: "S"; }
+			.icon-38:before { content: "S"; }
+			.icon-39:before { content: "S"; }
+			.icon-40:before { content: "M"; }
+			.icon-41:before { content: "W"; }
+			.icon-42:before { content: "I"; }
+			.icon-43:before { content: "W"; }
+			.icon-44:before { content: "a"; }
+			.icon-45:before { content: "S"; }
+			.icon-46:before { content: "U"; }
+			.icon-47:before { content: "S"; }
+			
+			html, body
+			{
+				margin: 0 0 0 0;
+				background: black;
+				font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+			}
+			
+			#weather
+			{
+				left: 10px;
+				bottom: 10px;
+				color: white;
+				position: fixed;
+			}
+			
+			#weather > #icon
+			{
+				font-size: 48pt;
+				font-style: normal;
+				font-family: 'weather';
+			}
+			
+			#weather > #temp
+			{
+				font-size: 28pt;
+			}
+			
+			#weather > #temp:not(:empty):after
+			{
+				content: '°';
+			}
+			
+			center
+			{
+				top: 50%;
+				width: 100%;
+				position: absolute;
+				margin-top: -235px;
+			}
+			
+			img
+			{
+				width: 300px;
+				height: 300px;
+				-webkit-box-reflect: below 27px -webkit-linear-gradient(top, rgba(0,0,0,0) 25%, rgba(255,255,255,1) 400%);
+			}
+			
+			#title, #artist
+			{
+				color: white;
+				display: block;
+				z-index: 99999999;
+			}
+			
+			progress, input[type=range]
+			{
+				width: 300px;
+				display: block;
+			}
+			
+			progress
+			{
+				margin-bottom: 30px;
+			}
+			
+			#title
+			{
+				font-size: 24pt;
+				font-weight: bold;
+			}
+			
+			#artist
+			{
+				font-size: 20pt;
+			}
+			
+		</style>
+	</head>
+	
+	<body>
+		<div id="weather">
+			<i id="icon"></i>
+			<span id="temp"></span>
+		</div>
+		<center>
+			<input type="range" min="0" max="100" onchange="setVolume(this.value)" />
+			<img width="300" height="300" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
+			<audio style="display: none"></audio>
+			<progress max="180"></progress>
+			<span id="title"></span>
+			<span id="artist"></span>
+		</center>
+	</body>
+	
+</html>
