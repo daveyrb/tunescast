@@ -13,11 +13,11 @@ After starting the application, a small icon can be found in the system tray (me
 Just continue using iTunes on your computer or via your favorite iTunes remote app. As long as TunesCast is running, your music will continue being played through your TV or speakers.
 
 ## Support the Project
-If you like this application, please consider [donating a small amount of money](https://leoregner.eu/products/donate.php?id=2) in order to support the further development.
+If you like this application, please consider [donating a small amount of money](https://leoregner.eu/donate) in order to support the further development.
 
 ## Author
 Leopold Mathias Regner
-<https://www.leoregner.eu/>
+<https://leoregner.eu/>
 
 ---
 iTunes is a trademark of Apple Inc.
